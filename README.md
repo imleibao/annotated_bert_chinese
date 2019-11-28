@@ -27,7 +27,9 @@ ocab.txt
 lei@lei-desktop:Bert-Pytorch-Chinese-TextClassification$ 
 
 # Project Structure
-your project should be organized like bellow
+your project should be organized like bellow:
+
+```
 + convert_tf_to_pytorch     tools to convert tensorflow pretrained model to pytorch format 
 + data                      data set
   - dev.tsv  
@@ -45,4 +47,4 @@ your project should be organized like bellow
   - optmization.py          Bert optimizor
   - run_classifier_word.py  The entry of the whole task, including training and evaluating process.
   - run.sh                  Costom the model parameters according your needs
-  
+ ```
