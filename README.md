@@ -2,9 +2,9 @@
 This annotated version of code is based on repo [here](https://github.com/xieyufei1993/Bert-Pytorch-Chinese-TextClassification) ,which is a pytorch version of chinese text classification with bert. And the repo basically refers to [huggingface](https://github.com/huggingface/transformers) [v0.6.2](https://github.com/huggingface/transformers/releases/tag/v0.6.2) .
 
 # How to use it 
-This reop is created to illustrate the key code when using bert to classify chinese text. 
+This repo is created to illustrate the key code when using bert to classify chinese text. 
 
-Reading the file "bert_chinese_textclassification 之 run_classifier_word.ipynb",which is the core of this repo. This file gives you all pictures about how to handle chinese text classification task. 
+Reading the file "bert_chinese_textclassification 之 run_classifier_word.ipynb", the core of this repo giving you all pictures about how to handle chinese text classification task with bert. 
 
 Feel free to use it.
 
@@ -33,7 +33,7 @@ Atten:
 2. make sure you have set the  GLUE_DIR, BERT_BASE_DIR, BERT_PYTORCH_DIR right, their values depend on where did you setup your project. for example: GLUE_DIR specifies where to store datasets, "export GLUE_DIR=~~/code/bert-Chinese-classification-task/Bert-Pytorch-Chinese-TextClassification~~/data", meaning my project root directory is "~/code/bert-Chinese-classification-task/Bert-Pytorch-Chinese-TextClassification" and datasets are stored in "data" folder.
 3. If you change your datasets name or path, there are 3 spots you should modift too. a. the env parameters in run.sh; b. the commandline parameters in run.sh; c. dataset's name used to load in run_classifier_word.py
 ocab.txt
-lei@lei-desktop:Bert-Pytorch-Chinese-TextClassification$ 
+
 
 # Project Structure
 your project should be organized like bellow:
