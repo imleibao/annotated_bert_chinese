@@ -11,12 +11,12 @@ Feel free to use it.
 
   
 # To run the code 
-Reading fist:
+## Reading fist:
 
 The guidance [here](https://github.com/xieyufei1993/Bert-Pytorch-Chinese-TextClassification).
 Download `datasets` and `chinese bert pretrained model` released by google.
 
-Quick Start:
+## Quick Start:
 
 Step 1: download google pretrained model, and place it into pretrained_model folder.
 
@@ -27,7 +27,7 @@ Setp 3: modify run.sh, set envirenmernt parameters `GLUE_DIR`, `BERT_BASE_DIR`, 
 Step 4: sh run.sh.
 
 
-Atten: 
+## Atten: 
 
 1. make sure you downloaded data sets and google pretrained model and placed them at the right folder
 2. make sure you have set the  GLUE_DIR, BERT_BASE_DIR, BERT_PYTORCH_DIR right, their values depend on where did you setup your project. for example: GLUE_DIR specifies where to store datasets, "export GLUE_DIR=~~/code/bert-Chinese-classification-task/Bert-Pytorch-Chinese-TextClassification~~/data", meaning my project root directory is "~/code/bert-Chinese-classification-task/Bert-Pytorch-Chinese-TextClassification" and datasets are stored in "data" folder.
@@ -36,7 +36,7 @@ ocab.txt
 
 
 # Project Structure
-your project should be organized like bellow:
+to run the code without edited, your project should be organized like bellow:
 
 ```
 + convert_tf_to_pytorch     tools to convert tensorflow pretrained model to pytorch format 
