@@ -4,7 +4,7 @@ This repo is based on [Bert-Pytorch-Chinese-TextClassification](https://github.c
 # How to use it 
 This repo is created to illustrate the key code when using bert to classify chinese text. 
 
-The file "bert_chinese_textclassification 之 run_classifier_word.ipynb", the core of this repo, will give you all pictures about how to handle chinese text classification task with bert. Just read it.
+The file "annotated_run_classifier_word.ipynb", the core of this repo, will give you all pictures about how to handle chinese text classification task with bert. Just read it.
 
 Feel free to use it.
 
