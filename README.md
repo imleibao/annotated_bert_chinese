@@ -7,6 +7,6 @@ Reading the file "bert_chinese_textclassification 之 run_classifier_word.ipynb"
 
 Feel free to use it.
 
-#To run the source code 
+# To run the source code 
 Please follow the guidience of [here](https://github.com/xieyufei1993/Bert-Pytorch-Chinese-TextClassification)
 
