@@ -17,10 +17,13 @@ download data sets and google pretrained model
 
 Quick Start:
 
-Step 1: download google pretrained model, and place it into pretrained_model folder
-Step 2: download you dataset place it into data folder
-Setp 3: modify run.sh, set envirenmernt parameters GLUE_DIR, BERT_BASE_DIR, BERT_PYTORCH_DIR
-Step 4: sh run.sh
+Step 1: download google pretrained model, and place it into pretrained_model folder.
+
+Step 2: download you dataset place it into data folder.
+
+Setp 3: modify run.sh, set envirenmernt parameters GLUE_DIR, BERT_BASE_DIR, BERT_PYTORCH_DIR.
+
+Step 4: sh run.sh.
 
 
 Atten: 
