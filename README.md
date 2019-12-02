@@ -2,9 +2,9 @@
 This repo is based on [Bert-Pytorch-Chinese-TextClassification](https://github.com/xieyufei1993/Bert-Pytorch-Chinese-TextClassification) which basically refers to [huggingface](https://github.com/huggingface/transformers) , I guess [v0.6.2](https://github.com/huggingface/transformers/releases/tag/v0.6.2).
 
 # How to use it 
-This repo is created to illustrate the key code when using bert to classify chinese text. 
+This repo is created to illustrate the key code when using bert to classify chinese text(fine-tuning). 
 
-The file "annotated_run_classifier_word.ipynb", the core of this repo, will give you all pictures about how to handle chinese text classification task with bert. Just read it.
+The file "annotated_run_classifier_word.ipynb" & "modeling.ipynb", the core of this repo, will give you all pictures about how to handle chinese text classification task with bert. Just read it.
 
 Feel free to use it.
 
