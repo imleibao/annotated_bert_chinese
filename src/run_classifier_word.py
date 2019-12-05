@@ -34,6 +34,14 @@ import tokenization_word as tokenization
 from modeling import BertConfig, BertForSequenceClassification
 from optimization import BERTAdam
 
+<<<<<<< HEAD
+=======
+from time import localtime, strftime
+
+
+OPEN_SAVE_CHECKPOINT = 1
+
+>>>>>>> run training with batchsize = 14
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
@@ -302,6 +310,10 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         assert len(segment_ids) == max_seq_length
 
         label_id = label_map[example.label]
+<<<<<<< HEAD
+=======
+        '''
+>>>>>>> run training with batchsize = 14
         if ex_index < 5:
             logger.info("*** Example ***")
             logger.info("guid: %s" % (example.guid))
@@ -312,7 +324,11 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
             logger.info(
                 "segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
             logger.info("label: %s (id = %d)" % (example.label, label_id))
+<<<<<<< HEAD
 
+=======
+        '''
+>>>>>>> run training with batchsize = 14
         features.append(
             InputFeatures(
                 input_ids=input_ids,
@@ -478,6 +494,19 @@ def main():
     parser.add_argument('--loss_scale',
                         type=float, default=128,
                         help='Loss scaling, positive power of 2 values can improve fp16 convergence.')
+<<<<<<< HEAD
+=======
+    parser.add_argument("--resuming_from_checkpoint",
+                        default=None,
+                        type=str,
+                        help="snick using cc's computer")
+    parser.add_argument("--time_to_save_checkpoint",
+                        default=None,
+                        type=str,
+                        help="time to save checkpoint")
+    
+    
+>>>>>>> run training with batchsize = 14
 
     args = parser.parse_args()
 
@@ -524,9 +553,15 @@ def main():
             "Cannot use sequence length {} because the BERT model was only trained up to sequence length {}".format(
                 args.max_seq_length, bert_config.max_position_embeddings))
 
+<<<<<<< HEAD
     if os.path.exists(args.output_dir) and os.listdir(args.output_dir):
         raise ValueError("Output directory ({}) already exists and is not empty.".format(args.output_dir))
     os.makedirs(args.output_dir, exist_ok=True)
+=======
+#    if os.path.exists(args.output_dir) and os.listdir(args.output_dir):
+#        raise ValueError("Output directory ({}) already exists and is not empty.".format(args.output_dir))
+#    os.makedirs(args.output_dir, exist_ok=True)
+>>>>>>> run training with batchsize = 14
 
     task_name = args.task_name.lower()
 
@@ -551,10 +586,157 @@ def main():
 
     # Prepare model
     model = BertForSequenceClassification(bert_config, len(label_list))
+<<<<<<< HEAD
     if args.init_checkpoint is not None:
         model.bert.load_state_dict(torch.load(args.init_checkpoint, map_location='cpu'))
     if args.fp16:
         model.half()
+=======
+    # load from checkpoint and resuming train on gpu
+    if OPEN_SAVE_CHECKPOINT:
+        checkpoint = None
+        print("test checkpoint",args.resuming_from_checkpoint)
+        if args.resuming_from_checkpoint is not None:
+            checkpoint = torch.load(args.resuming_from_checkpoint)
+            model.load_state_dict(checkpoint['model_state_dict'])
+        elif args.init_checkpoint is not None:
+            model.bert.load_state_dict(torch.load(args.init_checkpoint, map_location='cpu'))
+        
+        if args.fp16:
+            model.half()
+
+        model.to(device)
+        # if args.local_rank != -1:
+        # model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank],
+        #                                                     output_device=args.local_rank)
+        # elif n_gpu > 1:
+        #    model = torch.nn.DataParallel(model)
+
+        # Prepare optimizer
+        if args.fp16:
+            param_optimizer = [(n, param.clone().detach().to('cpu').float().requires_grad_()) \
+                               for n, param in model.named_parameters()]
+        elif args.optimize_on_cpu:
+            param_optimizer = [(n, param.clone().detach().to('cpu').requires_grad_()) \
+                               for n, param in model.named_parameters()]
+        else:
+            param_optimizer = list(model.named_parameters())
+        no_decay = ['bias', 'gamma', 'beta']
+        optimizer_grouped_parameters = [
+            {'params': [p for n, p in param_optimizer if n not in no_decay], 'weight_decay_rate': 0.01},
+            {'params': [p for n, p in param_optimizer if n in no_decay], 'weight_decay_rate': 0.0}
+        ]
+        optimizer = BERTAdam(optimizer_grouped_parameters,
+                             lr=args.learning_rate,
+                             warmup=args.warmup_proportion,
+                             t_total=num_train_steps)
+###########################################################################
+    
+        # load from checkpoint and resuming train on gpu
+        resuming_epoch = 0
+        if checkpoint is not None:           
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            resuming_epoch = checkpoint['epoch']
+            print("training  from saved checkpoint ",resuming_epoch)
+
+        global_step = 0
+        if args.do_train:
+            train_features = convert_examples_to_features(
+                train_examples, label_list, args.max_seq_length, tokenizer)
+            logger.info("***** Running training *****")
+            logger.info("  Num examples = %d", len(train_examples))
+            logger.info("  Batch size = %d", args.train_batch_size)
+            logger.info("  Num steps = %d", num_train_steps)
+            all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
+            all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
+            all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
+            all_label_ids = torch.tensor([f.label_id for f in train_features], dtype=torch.long)
+            train_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
+            if args.local_rank == -1:
+                train_sampler = RandomSampler(train_data)
+            else:
+                train_sampler = RandomSampler(train_data)
+                # train_sampler = DistributedSampler(train_data)
+            train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=args.train_batch_size)
+
+            model.train()
+            
+            tr_loss = 0
+            if checkpoint is not None:
+                tr_loss = checkpoint['tr_loss']
+            
+                
+            for num_epoch in trange(resuming_epoch,int(args.num_train_epochs), desc="Epoch"):
+                epoch_loss = 0
+                for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):
+                    batch = tuple(t.to(device) for t in batch)
+                    input_ids, input_mask, segment_ids, label_ids = batch
+                    loss, _ = model(input_ids, segment_ids, input_mask, label_ids)
+                    logger.debug("1epoch: %d step %d loss:%f epoch loss:%f" % (num_epoch, step,loss.item(), epoch_loss))
+                    if n_gpu > 1:
+                        loss = loss.mean()  # mean() to average on multi-gpu.
+                    if args.fp16 and args.loss_scale != 1.0:
+                        # rescale loss for fp16 training
+                        # see https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/index.html
+                        loss = loss * args.loss_scale
+                    if args.gradient_accumulation_steps > 1:
+                        loss = loss / args.gradient_accumulation_steps
+                    loss.backward()
+                    logger.debug("2epoch: %d step %d loss:%f epoch loss:%f" % (num_epoch, step,loss.item(), epoch_loss))
+                    epoch_loss += loss.item()
+
+                    if (step + 1) % args.gradient_accumulation_steps == 0:
+                        if args.fp16 or args.optimize_on_cpu:
+                            if args.fp16 and args.loss_scale != 1.0:
+                                # scale down gradients for fp16 training
+                                for param in model.parameters():
+                                    param.grad.data = param.grad.data / args.loss_scale
+                            is_nan = set_optimizer_params_grad(param_optimizer, model.named_parameters(), test_nan=True)
+                            if is_nan:
+                                logger.info("FP16 TRAINING: Nan in gradients, reducing loss scaling")
+                                args.loss_scale = args.loss_scale / 2
+                                model.zero_grad()
+                                continue
+                            optimizer.step()
+                            copy_optimizer_params_to_model(model.named_parameters(), param_optimizer)
+                        else:
+                            optimizer.step()
+                        model.zero_grad()
+                        global_step += 1
+
+                logger.info("epoch: %d loss:%f" % (num_epoch,epoch_loss))
+                tr_loss += epoch_loss
+                if strftime("%H%M", localtime()) > args.time_to_save_checkpoint:
+                    output_path = args.output_dir+"/"+strftime("%m%d%H%M", localtime()) + ".pt"
+                    torch.save({
+                        'epoch':num_epoch + 1,
+                        'optimizer_state_dict':optimizer.state_dict(),
+                        'model_state_dict':model.state_dict(),
+                        'tr_loss':epoch_loss,
+                    },output_path)
+                    logger.info("training suspend, model saved at %s" % output_path)                
+                    return
+            # save the model
+            output_path = args.output_dir+"/train_over"+strftime("%m%d%H%M", localtime()) + ".pt"
+            torch.save({
+                'epoch':num_epoch + 1,
+                'optimizer_state_dict':optimizer.state_dict(),
+                'model_state_dict':model.state_dict(),
+                'tr_loss':tr_loss,
+            },output_path)
+                
+            logger.info("training over.tr_loss: %f" % tr_loss)
+            return
+######    ############################################  
+    raise ValueError("should not be here")
+    
+    if args.init_checkpoint is not None:
+        model.bert.load_state_dict(torch.load(args.init_checkpoint, map_location='cpu'))
+        
+    if args.fp16:
+        model.half()
+
+>>>>>>> run training with batchsize = 14
     model.to(device)
     # if args.local_rank != -1:
     # model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank],
@@ -580,9 +762,14 @@ def main():
                          lr=args.learning_rate,
                          warmup=args.warmup_proportion,
                          t_total=num_train_steps)
+<<<<<<< HEAD
 
     print("test accumulationstep:", args.train_batch_size, args.gradient_accumulation_steps, args.num_train_epochs, num_train_steps)
     dd
+=======
+    print("test accumulationstep:", args.train_batch_size, args.gradient_accumulation_steps, args.num_train_epochs, num_train_steps)
+    
+>>>>>>> run training with batchsize = 14
     global_step = 0
     if args.do_train:
         train_features = convert_examples_to_features(
@@ -599,13 +786,20 @@ def main():
         if args.local_rank == -1:
             train_sampler = RandomSampler(train_data)
         else:
+<<<<<<< HEAD
 
+=======
+>>>>>>> run training with batchsize = 14
             train_sampler = RandomSampler(train_data)
             # train_sampler = DistributedSampler(train_data)
         train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=args.train_batch_size)
 
         model.train()
+<<<<<<< HEAD
         for _ in trange(int(args.num_train_epochs), desc="Epoch"):
+=======
+        for num_epoch in trange(int(args.num_train_epochs), desc="Epoch"):
+>>>>>>> run training with batchsize = 14
             tr_loss = 0
             nb_tr_examples, nb_tr_steps = 0, 0
             for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):
@@ -642,6 +836,20 @@ def main():
                         optimizer.step()
                     model.zero_grad()
                     global_step += 1
+<<<<<<< HEAD
+=======
+                    
+            if strftime("%H%M", localtime()) > args.time_to_save_checkpoint:
+                output_path = args.output_dir+"/"+strftime("%m%d%H%M", localtime()) + ".pt"
+                torch.save({
+                    'epoch':num_epoch + 1,
+                    'optimizer_state_dict':optimizer.state_dict(),
+                    'model_state_dict':model.state_dict(),
+                    'tr_loss':tr_loss,
+                },output_path)
+                print("saved checkpoint: "+output_path)
+                return
+>>>>>>> run training with batchsize = 14
 
     if args.do_eval:
         eval_examples = processor.get_dev_examples(args.data_dir)
