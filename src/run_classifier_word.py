@@ -37,7 +37,7 @@ from optimization import BERTAdam
 <<<<<<< HEAD
 =======
 from time import localtime, strftime
-
+import time
 
 OPEN_SAVE_CHECKPOINT = 1
 
@@ -387,6 +387,10 @@ def set_optimizer_params_grad(named_params_optimizer, named_params_model, test_n
         param_opti.grad.data.copy_(param_model.grad.data)
     return is_nan
 
+def sleepat(info, secs=None):
+    logger.info(info)
+    if secs is not None:
+        time.sleep(secs)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -593,19 +597,29 @@ def main():
         model.half()
 =======
     # load from checkpoint and resuming train on gpu
+
+    logger.info("before loading checkpoint")
+    time.sleep(10)
+
     if OPEN_SAVE_CHECKPOINT:
         checkpoint = None
         print("test checkpoint",args.resuming_from_checkpoint)
         if args.resuming_from_checkpoint is not None:
-            checkpoint = torch.load(args.resuming_from_checkpoint)
+            sleepat(("loadcheck"))
+            checkpoint = torch.load(args.resuming_from_checkpoint, map_location='cpu')
+            sleepat(("loadcheck done"), 10)
+            sleepat(("loadmodel"), 10)
             model.load_state_dict(checkpoint['model_state_dict'])
+            sleepat(("loadmodel done"), 10)
         elif args.init_checkpoint is not None:
             model.bert.load_state_dict(torch.load(args.init_checkpoint, map_location='cpu'))
-        
+
         if args.fp16:
             model.half()
-
-        model.to(device)
+        
+        for param in model.parameters():
+            logger.info("model loaction: " + param.device.type)
+            ddr
         # if args.local_rank != -1:
         # model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank],
         #                                                     output_device=args.local_rank)
@@ -631,13 +645,29 @@ def main():
                              warmup=args.warmup_proportion,
                              t_total=num_train_steps)
 ###########################################################################
-    
+
+        for param in model.parameters():
+            print("model loaction1:", param.device, param.size(), 'id', id(param))
         # load from checkpoint and resuming train on gpu
         resuming_epoch = 0
-        if checkpoint is not None:           
+        if checkpoint is not None:
+            print("before load opt： ",optimizer.state_dict())
+            time.sleep(10)
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            print("after load opt： ", optimizer.state_dict())
+            time.sleep(10)
+
             resuming_epoch = checkpoint['epoch']
-            print("training  from saved checkpoint ",resuming_epoch)
+            logger.info("training  from saved checkpoint %d",resuming_epoch)
+
+        for param in optimizer.param_groups:
+            print("optimizer loaction1:",  param)
+
+        logger.info("before moving")
+        time.sleep(10)
+
+        model.to(device)
+        logger.info("after moving")
 
         global_step = 0
         if args.do_train:
@@ -664,8 +694,10 @@ def main():
             tr_loss = 0
             if checkpoint is not None:
                 tr_loss = checkpoint['tr_loss']
-            
-                
+
+            print("sleep at training")
+            time.sleep(109)
+            ddd
             for num_epoch in trange(resuming_epoch,int(args.num_train_epochs), desc="Epoch"):
                 epoch_loss = 0
                 for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):
@@ -707,7 +739,7 @@ def main():
                 logger.info("epoch: %d loss:%f" % (num_epoch,epoch_loss))
                 tr_loss += epoch_loss
                 if strftime("%H%M", localtime()) > args.time_to_save_checkpoint:
-                    output_path = args.output_dir+"/"+strftime("%m%d%H%M", localtime()) + ".pt"
+                    output_path = args.output_dir + "/" + strftime("%m%d%H%M", localtime()) + ("_%d_%d" % (args.train_batch_size,args.gradient_accumulation_steps)) + ".pt"
                     torch.save({
                         'epoch':num_epoch + 1,
                         'optimizer_state_dict':optimizer.state_dict(),
@@ -717,7 +749,7 @@ def main():
                     logger.info("training suspend, model saved at %s" % output_path)                
                     return
             # save the model
-            output_path = args.output_dir+"/train_over"+strftime("%m%d%H%M", localtime()) + ".pt"
+            output_path = args.output_dir+"/train_over"+strftime("%m%d%H%M", localtime()) + ("_%d_%d" % (args.train_batch_size,args.gradient_accumulation_steps)) + ".pt"
             torch.save({
                 'epoch':num_epoch + 1,
                 'optimizer_state_dict':optimizer.state_dict(),
@@ -726,8 +758,9 @@ def main():
             },output_path)
                 
             logger.info("training over.tr_loss: %f" % tr_loss)
-            return
+            
 ######    ############################################  
+<<<<<<< HEAD
     raise ValueError("should not be here")
     
     if args.init_checkpoint is not None:
@@ -851,6 +884,8 @@ def main():
                 return
 >>>>>>> run training with batchsize = 14
 
+=======
+>>>>>>> test print for model GPU usage
     if args.do_eval:
         eval_examples = processor.get_dev_examples(args.data_dir)
         eval_features = convert_examples_to_features(
@@ -898,8 +933,7 @@ def main():
 
         result = {'eval_loss': eval_loss,
                   'eval_accuracy': eval_accuracy,
-                  'global_step': global_step,
-                  'loss': tr_loss / nb_tr_steps}
+                  'global_step': global_step}
 
         output_eval_file = os.path.join(args.output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
