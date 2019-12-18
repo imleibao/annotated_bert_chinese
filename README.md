@@ -64,7 +64,7 @@ bach_size = 24
 accumulation_step = 2
 epoch = 50
 gpu:2070
-about:48 hours
+about 25 hours
 
 results:
 ```
