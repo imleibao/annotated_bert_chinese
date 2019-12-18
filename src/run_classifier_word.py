@@ -35,10 +35,13 @@ from modeling import BertConfig, BertForSequenceClassification
 from optimization import BERTAdam
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 from time import localtime, strftime
 import time
 
+=======
+>>>>>>> delete time pack
 OPEN_SAVE_CHECKPOINT = 1
 
 >>>>>>> run training with batchsize = 14
@@ -387,11 +390,6 @@ def set_optimizer_params_grad(named_params_optimizer, named_params_model, test_n
         param_opti.grad.data.copy_(param_model.grad.data)
     return is_nan
 
-def sleepat(info, secs=None):
-    logger.info(info)
-    if secs is not None:
-        time.sleep(secs)
-
 def main():
     parser = argparse.ArgumentParser()
 
@@ -598,28 +596,19 @@ def main():
 =======
     # load from checkpoint and resuming train on gpu
 
-    logger.info("before loading checkpoint")
-    time.sleep(10)
 
     if OPEN_SAVE_CHECKPOINT:
         checkpoint = None
         print("test checkpoint",args.resuming_from_checkpoint)
         if args.resuming_from_checkpoint is not None:
-            sleepat(("loadcheck"))
             checkpoint = torch.load(args.resuming_from_checkpoint, map_location='cpu')
-            sleepat(("loadcheck done"), 10)
-            sleepat(("loadmodel"), 10)
             model.load_state_dict(checkpoint['model_state_dict'])
-            sleepat(("loadmodel done"), 10)
         elif args.init_checkpoint is not None:
             model.bert.load_state_dict(torch.load(args.init_checkpoint, map_location='cpu'))
 
         if args.fp16:
             model.half()
-        
-        for param in model.parameters():
-            logger.info("model loaction: " + param.device.type)
-            ddr
+
         # if args.local_rank != -1:
         # model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank],
         #                                                     output_device=args.local_rank)
@@ -646,28 +635,19 @@ def main():
                              t_total=num_train_steps)
 ###########################################################################
 
-        for param in model.parameters():
-            print("model loaction1:", param.device, param.size(), 'id', id(param))
+        # should move before optimizer load, cuz opt will create state at the same pos of where model locate
+        # therefore if the move operation late, it will raise error in optimizer.step, since optimizer.state
+        # was created at cpu, but model has been move to gpu.
+        #
+        # According to the source code of optim.load_state_dict()-> def cast()
+        model.to(device)
+
         # load from checkpoint and resuming train on gpu
         resuming_epoch = 0
         if checkpoint is not None:
-            print("before load opt： ",optimizer.state_dict())
-            time.sleep(10)
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            print("after load opt： ", optimizer.state_dict())
-            time.sleep(10)
-
             resuming_epoch = checkpoint['epoch']
             logger.info("training  from saved checkpoint %d",resuming_epoch)
-
-        for param in optimizer.param_groups:
-            print("optimizer loaction1:",  param)
-
-        logger.info("before moving")
-        time.sleep(10)
-
-        model.to(device)
-        logger.info("after moving")
 
         global_step = 0
         if args.do_train:
@@ -695,9 +675,6 @@ def main():
             if checkpoint is not None:
                 tr_loss = checkpoint['tr_loss']
 
-            print("sleep at training")
-            time.sleep(109)
-            ddd
             for num_epoch in trange(resuming_epoch,int(args.num_train_epochs), desc="Epoch"):
                 epoch_loss = 0
                 for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):

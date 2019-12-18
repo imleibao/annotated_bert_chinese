@@ -48,9 +48,13 @@ time python3 run_classifier_word.py \
   --gradient_accumulation_steps 2 \
   --time_to_save_checkpoint 2200 \
 <<<<<<< HEAD
+<<<<<<< HEAD
 #  --resuming_from_checkpoint $BERT_ROOT_DIR/checkpoint/12042226.pt  
   > $LOG_DIR/$LOGNAME.log
 >>>>>>> run training with batchsize = 14
 =======
   --resuming_from_checkpoint $BERT_ROOT_DIR/checkpoint/12092203.pt  > $LOG_DIR/$LOGNAME.log
 >>>>>>> test print for model GPU usage
+=======
+  --resuming_from_checkpoint $BERT_ROOT_DIR/checkpoint/12172222_12_2.pt  > $LOG_DIR/$LOGNAME.log
+>>>>>>> delete time pack
